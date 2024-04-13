@@ -2,7 +2,7 @@ import dash
 from dash import dcc, html, Input, Output
 from datetime import date
 from server import fetch_update_graph
-
+from server import calculate_daily_change
 # Initial setup
 app = dash.Dash(__name__)
 app.title = 'Stock Market Dashboard'
@@ -21,6 +21,7 @@ app.layout = html.Div([
             # Add more stocks as needed
         ],
         value='AAPL',  # Default selected stock
+        multi=True, # Allow multiple stock selection
         style={'width':'40%','display':'inline-block'}
     ),
 
@@ -36,6 +37,7 @@ app.layout = html.Div([
         start_date=date(2024,1,1),
         style={'width':'40%','display':'inline-block'}
     ),
+    html.Div(id='daily-change-text'),
     # Graph to display stock prices
     dcc.Graph(id='stock-graph')
 ],style={'font-family':'Arial'})
@@ -47,7 +49,26 @@ app.layout = html.Div([
      Input('date-picker', 'start_date'),
      Input('date-picker', 'end_date')]
 )
-def update_graph(selected_stock, start_date, end_date):
+def update_graph(selected_stock, start_date, end_date):   
     return fetch_update_graph(selected_stock, start_date, end_date)
+
+@app.callback(
+    Output('daily-change-text', 'children'),
+    [Input('stock-dropdown', 'value'),
+     Input('date-picker', 'start_date'),
+     Input('date-picker', 'end_date')]
+)
+def update_daily_change_text(stock_symbol, start_date, end_date):
+    if start_date is not None and end_date is not None:
+        daily_change = calculate_daily_change(stock_symbol, start_date, end_date)
+        return html.Div([
+            html.H3('Change in Stock Price for the Day'),
+            html.P(daily_change)
+        ])
+    else:
+        return ''   
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
+
