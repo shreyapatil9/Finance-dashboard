@@ -7,9 +7,13 @@ from server import calculate_daily_change
 app = dash.Dash(__name__)
 app.title = 'Stock Market Dashboard'
 
+# Custom CSS styling
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
 # Layout of the dashboard
-app.layout = html.Div([
-    html.H1('Stock Market Dashboard'),
+app.layout = html.Div(style={'backgroundColor': '#f2f2f2', 'fontFamily': 'Arial, sans-serif'}, children=[
+    html.H1('Stock Market Dashboard', style={'textAlign': 'center', 'color': '#1585E2', 'marginTop': '20px', 'marginBottom': '20px'}),
 
     # Dropdown to select stock
     dcc.Dropdown(
@@ -22,7 +26,7 @@ app.layout = html.Div([
         ],
         value='AAPL',  # Default selected stock
         multi=True, # Allow multiple stock selection
-        style={'width':'40%','display':'inline-block'}
+        style={'width': '50%', 'margin': 'auto', 'marginBottom': '20px'}
     ),
 
     
@@ -40,7 +44,7 @@ app.layout = html.Div([
     html.Div(id='daily-change-text'),
     # Graph to display stock prices
     dcc.Graph(id='stock-graph')
-],style={'font-family':'Arial'})
+])
 
 # Callback to update the graph based on selected stock and date range
 @app.callback(
@@ -58,13 +62,22 @@ def update_graph(selected_stock, start_date, end_date):
      Input('date-picker', 'start_date'),
      Input('date-picker', 'end_date')]
 )
-def update_daily_change_text(stock_symbol, start_date, end_date):
+def update_daily_change_text(selected_stocks, start_date, end_date):
     if start_date is not None and end_date is not None:
-        daily_change = calculate_daily_change(stock_symbol, start_date, end_date)
-        return html.Div([
-            html.H3('Change in Stock Price for the Day'),
-            html.P(daily_change)
-        ])
+        text = []
+        if selected_stocks is not list:
+            selected_stocks = [selected_stocks]
+        for stock_symbol in selected_stocks:
+            daily_change = calculate_daily_change(stock_symbol, start_date, end_date)
+            color = 'green' if daily_change >= 0 else 'red'
+            text.append(
+                html.P([
+                    f'{stock_symbol}: ', 
+                    html.Span(f'{daily_change:.2f}', style={'color': color, 'marginLeft': '5px'})
+                    ] , 
+                    style={'display': 'inline', 'color': '#333333'}
+                ))
+        return text
     else:
         return ''   
 

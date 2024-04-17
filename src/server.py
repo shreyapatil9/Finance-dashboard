@@ -14,11 +14,14 @@ def calculate_daily_change(stock_symbol, start_date, end_date):
     # Get the last available date and its corresponding daily change
     last_date = daily_change.index[-1]
     last_daily_change = daily_change[-1]
-    return f'{stock_symbol}: {last_daily_change:.2f}'   
+    return last_daily_change
 
 def fetch_update_graph(selected_stock, start_date, end_date):
     if start_date is not None and end_date is not None and selected_stock:
         traces = []
+        print(selected_stock)
+        if selected_stock is not list:
+            selected_stock = [selected_stock]
         for stock_symbol in selected_stock:
             stock_data = get_stock_data(stock_symbol, start_date, end_date)
             close_prices = stock_data['Close']
